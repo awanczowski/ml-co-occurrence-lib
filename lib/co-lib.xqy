@@ -57,7 +57,6 @@ as element(colib:tree)*
     }
 };
 
-
 (:~
 : This function queries the database to build a branch of results
 : for example Source -> Creator -> Subject
