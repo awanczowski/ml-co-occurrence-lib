@@ -68,8 +68,7 @@ as element(colib:tree)*
 :)
 declare private function colib:build-branches($levels as element(colib:level)*,
                                               $previous as element(colib:level)*,
-                                              $query as cts:query*
-)
+                                              $query as cts:query*)
 as element(colib:branch)*
 {
 
