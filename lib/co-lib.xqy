@@ -13,16 +13,16 @@ module namespace colib = "https://github.com/awanczowski/ml-co-occurrence-lib";
 declare default collation "http://marklogic.com/collation/codepoint";
 
 (:~
-: This function colib:queries the database to build a tree of results
-: Source -> Creator -> Subject
+: This function colib:queries the database to build a tree of results.
+: For example Source -> Creator -> Subject
+:
 : @param $levels the configuration elements pointing to the range index.
 : @param $query a query or queries to bind the search.
 : @return a nested node of key and values.
 :)
-declare function  colib:build-tree(
- $levels as element(colib:levels),
- $query as cts:query*
-) as element(colib:tree)*
+declare function  colib:build-tree($levels as element(colib:levels),
+                                   $query as cts:query*)
+as element(colib:tree)*
 {
   let $firstLevel as element(colib:level) := ($levels/colib:level)[1]
 
@@ -40,7 +40,7 @@ declare function  colib:build-tree(
   return
     element { xs:QName("colib:tree") } {
       for $key in cts:element-values($qname, (), (), $query)
-      let $newQuery := cts:element-range-query($qname, "=", $key, $collation)
+      let $newQuery as cts:query := cts:element-range-query($qname, "=", $key, $collation)
       let $branches as element(colib:branch)* :=
           colib:build-branches(
             ($levels/colib:level)[2 to fn:last()],
@@ -61,16 +61,17 @@ declare function  colib:build-tree(
 (:~
 : This function queries the database to build a branch of results
 : for example Source -> Creator -> Subject
+:
 : @param $levels a set of configuration elements.
 : @param $previous the previous level that you were on
 : @param $query a query or queries to bind the search.
 : @return a nested node of key and values.
 :)
-declare private function colib:build-branches(
- $levels as element(colib:level)*,
- $previous as element(colib:level)*,
- $query as cts:query*
-) as element(colib:branch)*
+declare private function colib:build-branches($levels as element(colib:level)*,
+                                              $previous as element(colib:level)*,
+                                              $query as cts:query*
+)
+as element(colib:branch)*
 {
 
   let $prev as element(colib:level) :=
@@ -108,7 +109,7 @@ declare private function colib:build-branches(
   return
         if(fn:exists($previous)) then
           (: Do a co-occurence to see what nodes children are in the tree :)
-          let $co :=
+          let $co as map:map? :=
             cts:element-value-co-occurrences(
               $prevQName,
               $nextQName,
@@ -120,12 +121,12 @@ declare private function colib:build-branches(
           return
                (: Child Branches :)
                for $value in map:get($co,$key)
-               let $collation :=
+               let $collation as xs:string? :=
                    if($next/colib:collation/text())
                    then fn:concat("collation=", $next/colib:collation/text())
                    else ()
 
-               let $newQuery := cts:element-range-query($nextQName,"=", $value, $collation)
+               let $newQuery as cts:query := cts:element-range-query($nextQName,"=", $value, $collation)
                return
                element { xs:QName("colib:branch") } {
                  attribute key { $next/colib:localName/text()} ,
@@ -138,10 +139,13 @@ declare private function colib:build-branches(
 
 (:~
 : This will flatten the tree structure into result rows.
+:
 : @param $tree the tree to be flattened.
 : @return an element that contains all the flatten branches.
 :)
-declare function colib:flatten-tree($tree as element(colib:tree)) as element(colib:results) {
+declare function colib:flatten-tree($tree as element(colib:tree))
+as element(colib:results)
+{
   element { xs:QName("colib:results") } {
     for $element in $tree/colib:branch
     return colib:flatten-branch($element)
@@ -150,10 +154,13 @@ declare function colib:flatten-tree($tree as element(colib:tree)) as element(col
 
 (:~
 : This will flatten a branch and all its children into result row.
+:
 : @param $branch the branch to be flattened.
 : @return a result element that contains all the flatten branches.
 :)
-declare private function colib:flatten-branch($branch as element(colib:branch)) as element(colib:result)* {
+declare private function colib:flatten-branch($branch as element(colib:branch))
+as element(colib:result)*
+{
     if($branch/colib:branch)
     then colib:flatten-branch($branch/colib:branch)
     else
@@ -163,6 +170,9 @@ declare private function colib:flatten-branch($branch as element(colib:branch)) 
           attribute freq { fn:data($branches[fn:last()]/@freq) },
           for $anc in $branches
           return
-            element { xs:QName($anc/@key) } { fn:string($anc/@value) }
+            element { xs:QName("colib:item") } {
+              $anc/@key,
+              fn:string($anc/@value)
+            }
         }
 };
