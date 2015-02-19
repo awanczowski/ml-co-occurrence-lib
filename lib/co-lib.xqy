@@ -157,12 +157,12 @@ declare private function colib:flatten-branch($branch as element(colib:branch)) 
     if($branch/colib:branch)
     then colib:flatten-branch($branch/colib:branch)
     else
-      element{ xs:QName("colib:result") } {
-        for $anc in $branch/ancestor-or-self::colib:branch
-        return
-          element { xs:QName($anc/@key) } {
-             $anc/@freq,
-             fn:string($anc/@value)
-          }
-      }
+      let $branches as element(colib:branch)* := $branch/ancestor-or-self::colib:branch
+      return
+        element{ xs:QName("colib:result") } {
+          attribute freq { fn:data($branches[fn:last()]/@freq) },
+          for $anc in $branches
+          return
+            element { xs:QName($anc/@key) } { fn:string($anc/@value) }
+        }
 };
