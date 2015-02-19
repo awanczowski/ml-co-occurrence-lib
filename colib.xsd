@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="https://github.com/awanczowski/ml-co-occurrence-lib"
+    xmlns:colib="https://github.com/awanczowski/ml-co-occurrence-lib"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified"
+    elementFormDefault="qualified">
+
+    <xs:element name="levels">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="colib:level" minOccurs="1" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="level">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element type="xs:anyURI" name="namespace"/>
+                <xs:element type="xs:string" name="localName"/>
+                <xs:element type="xs:anyURI" name="collation" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="tree">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="colib:branch" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="branch">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="colib:branch" minOccurs="0" maxOccurs="unbounded" />
+            </xs:sequence>
+            <xs:attribute name="freq" type="xs:integer"/>
+            <xs:attribute name="key" type="xs:string"/>
+            <xs:attribute name="value" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="results">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="colib:result" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="result">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="colib:item" minOccurs="1" maxOccurs="unbounded"/>
+            </xs:sequence>
+            <xs:attribute name="freq" type="xs:integer"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="item">
+        <xs:complexType>
+            <xs:simpleContent>
+                <xs:extension base="xs:string">
+                    <xs:attribute name="key" type="xs:string" />
+                </xs:extension>
+            </xs:simpleContent>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
